@@ -27,6 +27,7 @@ blast_sound = pygame.mixer.Sound('src/assets/blast.wav')
 # Game state
 SCORE = 0
 HIGHEST_SCORE = load_high_score()
+SPEED = 10
 game_state = "start_page"
 
 # Sprites
@@ -60,7 +61,10 @@ while True:
                     SPEED = MAX_SPEED
     if game_state == "playing":
         for entity in all_sprites:
-            entity.move()
+            if isinstance(entity, Enemy):
+                entity.move(SPEED, lambda points: globals().__setitem__('SCORE', SCORE + points))
+            else:
+                entity.move()
             DISPLAYSURF.blit(entity.image, entity.rect)
         DISPLAYSURF.blit(background, (0, 0))
         all_sprites.draw(DISPLAYSURF)
