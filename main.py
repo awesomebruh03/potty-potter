@@ -1,11 +1,14 @@
-import pygame, sys, random, time
+import sys
+sys.path.insert(0, './src')
+
+import pygame, random, time
 from pygame.locals import *
-from assets import *
-from player import Player
-from enemy import Enemy
-from coin import Coin1, Coin2
-from blast import Blast
-from utils import draw_text, draw_lives, load_high_score, save_high_score
+from src.assets import WIDTH, HEIGHT, background, live_bar, MAX_SPEED
+from src.player import Player
+from src.enemy import Enemy
+from src.coin import Coin1, Coin2
+from src.blast import Blast
+from src.utils import draw_text, draw_lives, load_high_score, save_high_score
 
 pygame.init()
 pygame.mixer.init()
@@ -16,10 +19,10 @@ DISPLAYSURF = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("The Harry Potter Game")
 
 # Load sounds
-pygame.mixer.music.load("assets/game_bg.wav")
+pygame.mixer.music.load("src/assets/game_bg.wav")
 pygame.mixer.music.play(-1)
-point_sound = pygame.mixer.Sound('assets/point.wav')
-blast_sound = pygame.mixer.Sound('assets/blast.wav')
+point_sound = pygame.mixer.Sound('src/assets/point.wav')
+blast_sound = pygame.mixer.Sound('src/assets/blast.wav')
 
 # Game state
 SCORE = 0
