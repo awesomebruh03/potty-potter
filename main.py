@@ -1,3 +1,4 @@
+
 import sys
 sys.path.insert(0, './src')
 
@@ -50,16 +51,28 @@ while True:
             sys.exit()
         if game_state == "start_page":
             DISPLAYSURF.blit(background, (0, 0))
-            # ...draw start page text/images...
-        if event.type == pygame.KEYDOWN:
-            if game_state == "start_page":
-                game_state = "playing"
+            draw_text(DISPLAYSURF, "The Harry Potter Game", 64, WIDTH / 2, HEIGHT / 4)
+            draw_text(DISPLAYSURF, "Press any key to begin", 22, WIDTH / 2, HEIGHT / 2)
+            pygame.display.flip()
+            waiting = True
+            while waiting:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        sys.exit()
+                    if event.type == pygame.KEYUP:
+                        waiting = False
+                        game_state = "playing"
+
         if game_state == "playing":
             if event.type == INC_SPEED:
                 SPEED += 0.1
                 if SPEED > MAX_SPEED:
                     SPEED = MAX_SPEED
+
     if game_state == "playing":
+        DISPLAYSURF.blit(background, (0, 0))
+
         for entity in all_sprites:
             if isinstance(entity, Enemy):
                 entity.move(SPEED, lambda points: globals().__setitem__('SCORE', SCORE + points))
@@ -67,22 +80,47 @@ while True:
                 entity.move(SPEED)
             else:
                 entity.move()
-            DISPLAYSURF.blit(entity.image, entity.rect)
-        DISPLAYSURF.blit(background, (0, 0))
+
+        # Check for collisions
+        if pygame.sprite.spritecollide(P1, enemies, True, pygame.sprite.collide_circle):
+            P1.lives -= 1
+            blast_sound.play()
+            E1 = Enemy()
+            enemies.add(E1)
+            all_sprites.add(E1)
+
+        if pygame.sprite.spritecollide(P1, coins1, True, pygame.sprite.collide_circle):
+            SCORE += 1
+            point_sound.play()
+            C1 = Coin1()
+            coins1.add(C1)
+            all_sprites.add(C1)
+
+        if pygame.sprite.spritecollide(P1, coins2, True, pygame.sprite.collide_circle):
+            SCORE += 1
+            point_sound.play()
+            C2 = Coin2()
+            coins2.add(C2)
+            all_sprites.add(C2)
+
         all_sprites.draw(DISPLAYSURF)
         draw_text(DISPLAYSURF, str(SCORE), 30, 30, 10)
         draw_lives(DISPLAYSURF, 800, 10, P1.lives, live_bar)
-        all_sprites.update()
-        # ...collision and scoring logic...
+
         if P1.lives == 0:
             game_state = "game_over"
+
     elif game_state == "game_over":
         for enemy in enemies:
             enemy.kill()
         # ...game over screen...
-        pygame.display.update()
+        draw_text(DISPLAYSURF, "Game Over", 64, WIDTH / 2, HEIGHT / 4)
+        draw_text(DISPLAYSURF, f"Score: {SCORE}", 22, WIDTH / 2, HEIGHT / 2)
+        draw_text(DISPLAYSURF, f"High Score: {HIGHEST_SCORE}", 22, WIDTH/2, HEIGHT/2+40)
+        pygame.display.flip()
         time.sleep(6)
         pygame.quit()
         sys.exit()
+
     pygame.display.update()
     FramePerSec.tick(FPS)
