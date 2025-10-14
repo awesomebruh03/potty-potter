@@ -63,6 +63,8 @@ while True:
         for entity in all_sprites:
             if isinstance(entity, Enemy):
                 entity.move(SPEED, lambda points: globals().__setitem__('SCORE', SCORE + points))
+            elif isinstance(entity, (Coin1, Coin2)):
+                entity.move(SPEED)
             else:
                 entity.move()
             DISPLAYSURF.blit(entity.image, entity.rect)
