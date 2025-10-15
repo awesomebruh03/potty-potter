@@ -35,7 +35,11 @@ game_state = "start_page"
 # Character selection carousel
 characters = ["harry", "ron", "hermione"]
 character_names = ["Harry", "Ron", "Hermione"]
-character_images = [pygame.image.load("src/assets/potter.png"), pygame.image.load("src/assets/ron.png"), pygame.image.load("src/assets/hermione.png")]
+character_images = [
+    pygame.image.load("src/assets/potter.png").convert_alpha(),
+    pygame.image.load("src/assets/ron.png").convert_alpha(),
+    pygame.image.load("src/assets/hermione.png").convert_alpha()
+]
 selected_idx = 0
 
 # Wait for character selection
