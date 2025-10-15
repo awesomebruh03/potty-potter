@@ -3,9 +3,14 @@ from pygame.locals import *
 from src.assets import WIDTH, HEIGHT
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, character="harry"):
         super().__init__()
-        self.image = pygame.image.load("src/assets/potter.png")
+        if character == "ron":
+            self.image = pygame.image.load("src/assets/ron.png")
+        elif character == "hermione":
+            self.image = pygame.image.load("src/assets/hermione.png")
+        else:
+            self.image = pygame.image.load("src/assets/potter.png")
         self.rect = self.image.get_rect()
         self.radius = 40
         self.rect.center = (100, 160)

@@ -31,8 +31,46 @@ HIGHEST_SCORE = load_high_score()
 SPEED = 10
 game_state = "start_page"
 
+
+# Character selection carousel
+characters = ["harry", "ron", "hermione"]
+character_names = ["Harry", "Ron", "Hermione"]
+character_images = [pygame.image.load("src/assets/potter.png"), pygame.image.load("src/assets/ron.png"), pygame.image.load("src/assets/hermione.png")]
+selected_idx = 0
+
+# Wait for character selection
+selecting = True
+while selecting:
+    DISPLAYSURF.blit(background, (0, 0))
+    font = pygame.font.Font(None, 50)
+    title = font.render("Choose your character", True, (255,255,0))
+    DISPLAYSURF.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//6))
+    # Draw carousel
+    for i, img in enumerate(character_images):
+        x = WIDTH//2 + (i - selected_idx) * 220
+        y = HEIGHT//2 - img.get_height()//2
+        scale = 1.0 if i == selected_idx else 0.7
+        img_scaled = pygame.transform.smoothscale(img, (int(img.get_width()*scale), int(img.get_height()*scale)))
+        DISPLAYSURF.blit(img_scaled, (x - img_scaled.get_width()//2, y))
+        name = font.render(character_names[i], True, (255,255,255) if i == selected_idx else (180,180,180))
+        DISPLAYSURF.blit(name, (x - name.get_width()//2, y + img_scaled.get_height() + 10))
+    instr = font.render("Use LEFT/RIGHT arrows. ENTER to select.", True, (255,255,255))
+    DISPLAYSURF.blit(instr, (WIDTH//2 - instr.get_width()//2, HEIGHT - 80))
+    pygame.display.update()
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == KEYDOWN:
+            if event.key == K_LEFT:
+                selected_idx = (selected_idx - 1) % len(characters)
+            elif event.key == K_RIGHT:
+                selected_idx = (selected_idx + 1) % len(characters)
+            elif event.key == K_RETURN or event.key == K_KP_ENTER:
+                selecting = False
+
 # Sprites
-P1 = Player()
+P1 = Player(characters[selected_idx])
 E1 = Enemy()
 C1 = Coin1()
 C2 = Coin2()
