@@ -23,7 +23,7 @@ pygame.display.set_caption("The Harry Potter Game")
 pygame.mixer.music.load("src/assets/game_bg.wav")
 pygame.mixer.music.play(-1)
 point_sound = pygame.mixer.Sound('src/assets/point.wav')
-blast_sound = pygame.mixer.Sound('src/assets/blast.wav')
+blast_sound = pygame.mixer.Sound('src/assets/blast.mp3')
 
 # Game state
 SCORE = 0
