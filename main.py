@@ -76,10 +76,82 @@ while selecting:
 
 # Sprites
 P1 = Player(characters[selected_idx])
-# Add multiple enemies
+C1 = Coin1()
+C2 = Coin2()
+coins1 = pygame.sprite.Group(C1)
+coins2 = pygame.sprite.Group(C2)
+
+# Enemy spawn logic
 enemies = pygame.sprite.Group()
-for _ in range(3):
-    enemies.add(Enemy())
+all_sprites = pygame.sprite.Group(P1, C1, C2)
+
+
+# === GAMEPLAY TUNING PARAMETERS ===
+ENEMY_RADIUS = 40                # Enemy collision radius
+MIN_ENEMY_DIST = 80              # Minimum distance between enemies (anti-clumping)
+ENEMY_SPAWN_BASE = 2000          # Initial enemy spawn interval (ms)
+ENEMY_SPAWN_MIN = 600            # Minimum enemy spawn interval (ms)
+ENEMY_SPAWN_ACCEL = 0.98         # How quickly spawn interval decreases (0.98 = 2% faster per spawn)
+PATHFINDING_GUARANTEE_WIDTH = 60 # Minimum width (pixels) of guaranteed vertical path
+INITIAL_ENEMY_COUNT = 3          # Number of enemies at game start
+MAX_SPEED = 15                   # Maximum game speed
+# ================================
+
+enemy_spawn_timer = pygame.time.get_ticks()
+enemy_spawn_interval = ENEMY_SPAWN_BASE
+
+def get_valid_enemy_y(existing_enemies):
+    attempts = 0
+    while attempts < 100:
+        y = random.randint(ENEMY_RADIUS, HEIGHT-ENEMY_RADIUS)
+        # Anti-clumping: not too close to any enemy
+        too_close = False
+        for e in existing_enemies:
+            if abs(e.rect.centery - y) < MIN_ENEMY_DIST:
+                too_close = True
+                break
+        if too_close:
+            attempts += 1
+            continue
+        # Pathfinding: check for at least one clear vertical path
+        columns = [True]*WIDTH
+        for e in existing_enemies:
+            left = max(0, int(e.rect.left - ENEMY_RADIUS))
+            right = min(WIDTH, int(e.rect.right + ENEMY_RADIUS))
+            for col in range(left, right):
+                columns[col] = False
+        # Simulate new enemy
+        left = max(0, int(WIDTH - ENEMY_RADIUS*2))
+        right = WIDTH
+        for col in range(left, right):
+            columns[col] = False
+        # Guarantee a vertical path of at least PATHFINDING_GUARANTEE_WIDTH pixels
+        path_found = False
+        count = 0
+        for col in range(WIDTH):
+            if columns[col]:
+                count += 1
+                if count >= PATHFINDING_GUARANTEE_WIDTH:
+                    path_found = True
+                    break
+            else:
+                count = 0
+        if path_found:
+            return y
+        attempts += 1
+    return None
+
+def spawn_enemy():
+    y = get_valid_enemy_y(enemies)
+    if y is not None:
+        enemy = Enemy()
+        enemy.rect.center = (WIDTH, y)
+        enemies.add(enemy)
+        all_sprites.add(enemy)
+
+# Initial enemies
+for _ in range(INITIAL_ENEMY_COUNT):
+    spawn_enemy()
 C1 = Coin1()
 C2 = Coin2()
 coins1 = pygame.sprite.Group(C1)
@@ -120,6 +192,14 @@ while True:
     if game_state == "playing":
         DISPLAYSURF.blit(background, (0, 0))
 
+        # Progressive difficulty: spawn enemies faster over time
+        now = pygame.time.get_ticks()
+        if now - enemy_spawn_timer > enemy_spawn_interval:
+            spawn_enemy()
+            enemy_spawn_timer = now
+            # Decrease interval, but not below minimum
+            enemy_spawn_interval = max(ENEMY_SPAWN_MIN, enemy_spawn_interval * ENEMY_SPAWN_ACCEL)
+
         for entity in all_sprites:
             if isinstance(entity, Enemy):
                 entity.move(SPEED, lambda points: globals().__setitem__('SCORE', SCORE + points))
@@ -135,9 +215,7 @@ while True:
             blast_sound.play()
             blast = Blast(hit.rect.centerx, hit.rect.centery)
             all_sprites.add(blast)
-            new_enemy = Enemy()
-            enemies.add(new_enemy)
-            all_sprites.add(new_enemy)
+            spawn_enemy()
 
         if pygame.sprite.spritecollide(P1, coins1, True, pygame.sprite.collide_circle):
             SCORE += 1
