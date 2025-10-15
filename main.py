@@ -73,15 +73,20 @@ while selecting:
             elif event.key == K_RETURN or event.key == K_KP_ENTER:
                 selecting = False
 
+
 # Sprites
 P1 = Player(characters[selected_idx])
-E1 = Enemy()
+# Add multiple enemies
+enemies = pygame.sprite.Group()
+for _ in range(3):
+    enemies.add(Enemy())
 C1 = Coin1()
 C2 = Coin2()
-enemies = pygame.sprite.Group(E1)
 coins1 = pygame.sprite.Group(C1)
 coins2 = pygame.sprite.Group(C2)
-all_sprites = pygame.sprite.Group(P1, E1, C1, C2)
+all_sprites = pygame.sprite.Group(P1, C1, C2)
+for enemy in enemies:
+    all_sprites.add(enemy)
 
 INC_SPEED = pygame.USEREVENT + 1
 pygame.time.set_timer(INC_SPEED, 1000)
@@ -124,12 +129,15 @@ while True:
                 entity.move()
 
         # Check for collisions
-        if pygame.sprite.spritecollide(P1, enemies, True, pygame.sprite.collide_circle):
+        hits = pygame.sprite.spritecollide(P1, enemies, True, pygame.sprite.collide_circle)
+        for hit in hits:
             P1.lives -= 1
             blast_sound.play()
-            E1 = Enemy()
-            enemies.add(E1)
-            all_sprites.add(E1)
+            blast = Blast(hit.rect.centerx, hit.rect.centery)
+            all_sprites.add(blast)
+            new_enemy = Enemy()
+            enemies.add(new_enemy)
+            all_sprites.add(new_enemy)
 
         if pygame.sprite.spritecollide(P1, coins1, True, pygame.sprite.collide_circle):
             SCORE += 1
